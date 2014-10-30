@@ -7,7 +7,8 @@ import (
 	"net"
 	"os"
 	"reflect"
-	"syscall"
+	//"syscall"
+	mmapgo "github.com/edsrzf/mmap-go"
 )
 
 const dataSectionSeparatorSize = 16
@@ -21,6 +22,7 @@ type Reader struct {
 	buffer    []byte
 	decoder   decoder
 	Metadata  Metadata
+	mmap	  mmapgo.MMap
 	ipv4Start uint
 }
 
@@ -49,24 +51,21 @@ func Open(file string) (*Reader, error) {
 	if err != nil {
 		return nil, err
 	}
-	stats, err := mapFile.Stat()
-	if err != nil {
-		return nil, err
-	}
 
-	fileSize := int(stats.Size())
-	mmap, err := syscall.Mmap(int(mapFile.Fd()), 0, fileSize, syscall.PROT_READ, syscall.MAP_SHARED)
+	//mmap, err := syscall.Mmap(int(mapFile.Fd()), 0, fileSize, syscall.PROT_READ, syscall.MAP_SHARED)
+	mmap, err := mmapgo.Map(mapFile,mmapgo.RDONLY,0)
 	if err != nil {
 		return nil, err
 	}
 
 	reader, err := FromBytes(mmap)
 	if err != nil {
-		syscall.Munmap(mmap)
+		//syscall.Munmap(mmap)
+	 	mmap.Unmap()
 		mapFile.Close()
 		return nil, err
 	}
-
+	reader.mmap = mmap
 	reader.file = mapFile
 	return reader, nil
 }
@@ -237,7 +236,8 @@ func (r *Reader) resolveDataPointer(pointer uint, result reflect.Value) error {
 // this method does nothing.
 func (r *Reader) Close() {
 	if r.file != nil {
-		syscall.Munmap(r.buffer)
+		//syscall.Munmap(r.buffer)
+		r.mmap.Unmap()
 		r.file.Close()
 	}
 }

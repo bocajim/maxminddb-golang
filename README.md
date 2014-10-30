@@ -1,5 +1,9 @@
 # MaxMind DB Reader for Go #
 
+This is a fork that uses [mmap-go](https://github.com/edsrzf/mmap-go), a portable mmap implementation instead of the syscall version that only works in Linux.
+
+## Original Readme ##
+
 [![Build Status](https://travis-ci.org/oschwald/maxminddb-golang.png?branch=master)](https://travis-ci.org/oschwald/maxminddb-golang)
 [![GoDoc](https://godoc.org/github.com/oschwald/maxminddb-golang?status.png)](https://godoc.org/github.com/oschwald/maxminddb-golang)
 
